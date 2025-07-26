@@ -11,4 +11,16 @@ export default defineConfig({
       "@": path.resolve(process.cwd(), "./src"),
     },
   },
+  optimizeDeps: {
+    include: [
+      'react-dom/client',
+      'react-router-dom',
+      '@radix-ui/react-slot',
+      '@radix-ui/react-menubar',
+      'class-variance-authority',
+      'lucide-react',
+      'clsx',
+      'tailwind-merge',
+    ],
+  },
 })
