@@ -8,8 +8,7 @@ import { Input } from "../components/ui/input";
 import { Button } from "../components/ui/button";
 import googleLogo from "../../public/google.svg?url";
 import githubLogo from "../../public/github.svg?url";
-import microsoftLogo from "../../public/microsoft.svg?url";
-import { createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
+import { createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, GithubAuthProvider } from "firebase/auth";
 import { auth } from "../FireBase/Config";
 import { toast } from "sonner";
 import { useNavigate } from 'react-router-dom';
@@ -42,12 +41,24 @@ const Signup = () => {
       const userCredential = await createUserWithEmailAndPassword(auth, values.email, values.password);
       const idToken = await userCredential.user.getIdToken();
 
+      // Send token to backend for session creation
+      const res = await fetch('http://localhost:8000/sessionLogin', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        // credentials: 'include', // ⬅️ VERY IMPORTANT
+        body: JSON.stringify({ idToken }),
+      });
+
+      // const data = await res.json();
+      // alert(data.message);
+
       console.log("Signup successful! User ID Token:", idToken);
+      localStorage.setItem('idToken', idToken);
       toast.success("Signup successful!");
       navigate('/');
 
     } catch (err: any) {
-      console.error("Error during signup:", err);
+      console.error(err);
       toast.error(`Error during signup: ${err.message}`);
     }
   };
@@ -59,6 +70,7 @@ const Signup = () => {
       console.log("Google Login successful!");
       if (userCredential.user) {
         const idToken = await userCredential.user.getIdToken();
+        localStorage.setItem('idToken', idToken);
         console.log("Google User ID Token:", idToken);
       }
       toast.success("Google Login successful!");
@@ -66,6 +78,24 @@ const Signup = () => {
     } catch (error: any) {
       console.error("Error during Google login:", error);
       toast.error(`Google Login Error: ${error.message}`);
+    }
+  };
+
+  const handleGithubLogin = async () => {
+    try {
+      const provider = new GithubAuthProvider();
+      const userCredential = await signInWithPopup(auth, provider);
+      console.log("GitHub Login successful!");
+      if (userCredential.user) {
+        const idToken = await userCredential.user.getIdToken();
+        localStorage.setItem('idToken', idToken);
+        console.log("GitHub User ID Token:", idToken);
+      }
+      toast.success("GitHub Login successful!");
+      navigate('/');
+    } catch (error: any) {
+      console.error(error);
+      toast.error(`GitHub Login Error: ${error.message}`);
     }
   };
 
@@ -134,13 +164,9 @@ const Signup = () => {
               <img src={googleLogo} alt="Google Logo" className="mr-2 h-5 w-5" />
               Google
             </Button>
-            <Button variant="outline" className="text-lg py-6">
+            <Button variant="outline" className="text-lg py-6" onClick={handleGithubLogin}>
               <img src={githubLogo} alt="GitHub Logo" className="mr-2 h-5 w-5" />
               GitHub
-            </Button>
-            <Button variant="outline" className="text-lg py-6">
-              <img src={microsoftLogo} alt="Microsoft Logo" className="mr-2 h-5 w-5" />
-              Microsoft
             </Button>
           </div>
         </CardContent>

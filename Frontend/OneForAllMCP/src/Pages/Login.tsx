@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Label } from "../components/ui/label";
 import { Input } from "../components/ui/input";
 import { Button } from "../components/ui/button";
-import { signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
+import { signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, GithubAuthProvider } from "firebase/auth";
 import { auth } from "../FireBase/Config";
 import { toast } from "sonner";
 import { useNavigate } from 'react-router-dom';
@@ -14,7 +14,6 @@ import { useNavigate } from 'react-router-dom';
 // TODO: Fix or provide correct paths for logo imports if needed
 import googleLogo from "../../public/google.svg?url";
 import githubLogo from "../../public/github.svg?url";
-import microsoftLogo from "../../public/microsoft.svg?url";
 
 const formSchema = z.object({
   email: z.string().email({ message: "Invalid email address" }),
@@ -38,12 +37,20 @@ const Login = () => {
       const userCredential = await signInWithEmailAndPassword(auth, values.email, values.password);
       const idToken = await userCredential.user.getIdToken();
 
+      // Send token to backend for session creation
+      await fetch('http://localhost:8000/sessionLogin', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ idToken }),
+      });
+
       console.log("Login successful! User ID Token:", idToken);
+      localStorage.setItem('idToken', idToken);
       toast.success("Login successful!");
       navigate('/');
 
     } catch (err: any) {
-      console.error("Error during login:", err);
+      console.error(err);
       setError("password", { type: "manual", message: "Invalid email or password." });
       toast.error(`Error during login: ${err.message}`);
     }
@@ -56,13 +63,48 @@ const Login = () => {
       console.log("Google Login successful!");
       if (userCredential.user) {
         const idToken = await userCredential.user.getIdToken();
+
+        // Send token to backend for session creation
+        await fetch('http://localhost:8000/sessionLogin', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ idToken }),
+        });
+
         console.log("Google User ID Token:", idToken);
+        localStorage.setItem('idToken', idToken);
       }
       toast.success("Google Login successful!");
       navigate('/');
     } catch (error: any) {
       console.error("Error during Google login:", error);
       toast.error(`Google Login Error: ${error.message}`);
+    }
+  };
+
+  const handleGithubLogin = async () => {
+    try {
+      const provider = new GithubAuthProvider();
+      const userCredential = await signInWithPopup(auth, provider);
+      console.log("GitHub Login successful!");
+      if (userCredential.user) {
+        const idToken = await userCredential.user.getIdToken();
+
+        // Send token to backend for session creation
+        await fetch('http://localhost:8000/sessionLogin', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ idToken }),
+        });
+
+        console.log("GitHub User ID Token:", idToken);
+        localStorage.setItem('idToken', idToken);
+      }
+      toast.success("GitHub Login successful!");
+      navigate('/');
+    } catch (error: any) {
+      console.error(error);
+      toast.error(`GitHub Login Error: ${error.message}`);
     }
   };
 
@@ -115,13 +157,9 @@ const Login = () => {
               <img src={googleLogo} alt="Google Logo" className="mr-2 h-5 w-5" />
               Google
             </Button>
-            <Button variant="outline" className="text-lg py-6">
+            <Button variant="outline" className="text-lg py-6" onClick={handleGithubLogin}>
               <img src={githubLogo} alt="GitHub Logo" className="mr-2 h-5 w-5" />
               GitHub
-            </Button>
-            <Button variant="outline" className="text-lg py-6">
-              <img src={microsoftLogo} alt="Microsoft Logo" className="mr-2 h-5 w-5" />
-              Microsoft
             </Button>
           </div>
         </CardContent>
