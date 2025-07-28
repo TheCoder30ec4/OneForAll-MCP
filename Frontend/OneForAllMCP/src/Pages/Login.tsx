@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -6,12 +6,15 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Label } from "../components/ui/label";
 import { Input } from "../components/ui/input";
 import { Button } from "../components/ui/button";
-import { handleSignIn } from "@/controllers/authController"; // Corrected import path
+import { signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
+import { auth } from "../FireBase/Config";
+import { toast } from "sonner";
+import { useNavigate } from 'react-router-dom';
 
 // TODO: Fix or provide correct paths for logo imports if needed
-import googleLogo from "../../public/google.svg";
-import githubLogo from "../../public/github.svg";
-import microsoftLogo from "../../public/microsoft.svg";
+import googleLogo from "../../public/google.svg?url";
+import githubLogo from "../../public/github.svg?url";
+import microsoftLogo from "../../public/microsoft.svg?url";
 
 const formSchema = z.object({
   email: z.string().email({ message: "Invalid email address" }),
@@ -19,6 +22,7 @@ const formSchema = z.object({
 });
 
 const Login = () => {
+  const [showPassword, setShowPassword] = useState(false);
   const { register, handleSubmit, setError, formState: { errors } } = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -27,10 +31,38 @@ const Login = () => {
     },
   });
 
+  const navigate = useNavigate();
+
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    const result = await handleSignIn(values.email, values.password);
-    if (!result.success) {
-      setError("password", { type: "manual", message: result.error });
+    try {
+      const userCredential = await signInWithEmailAndPassword(auth, values.email, values.password);
+      const idToken = await userCredential.user.getIdToken();
+
+      console.log("Login successful! User ID Token:", idToken);
+      toast.success("Login successful!");
+      navigate('/');
+
+    } catch (err: any) {
+      console.error("Error during login:", err);
+      setError("password", { type: "manual", message: "Invalid email or password." });
+      toast.error(`Error during login: ${err.message}`);
+    }
+  };
+
+  const handleGoogleLogin = async () => {
+    try {
+      const provider = new GoogleAuthProvider();
+      const userCredential = await signInWithPopup(auth, provider);
+      console.log("Google Login successful!");
+      if (userCredential.user) {
+        const idToken = await userCredential.user.getIdToken();
+        console.log("Google User ID Token:", idToken);
+      }
+      toast.success("Google Login successful!");
+      navigate('/');
+    } catch (error: any) {
+      console.error("Error during Google login:", error);
+      toast.error(`Google Login Error: ${error.message}`);
     }
   };
 
@@ -51,7 +83,18 @@ const Login = () => {
               </div>
               <div className="flex flex-col space-y-1.5">
                 <Label htmlFor="password" className="text-lg">Password</Label>
-                <Input id="password" placeholder="Your password" type="password" className="text-lg py-6" {...register("password")} />
+                <div className="relative">
+                  <Input id="password" placeholder="Your password" type={showPassword ? "text" : "password"} className="text-lg py-6 pr-10" {...register("password")} />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="absolute right-0 top-0 h-full px-3 py-2"
+                    onClick={() => setShowPassword((prev) => !prev)}
+                  >
+                    {showPassword ? "Hide" : "Show"}
+                  </Button>
+                </div>
                 {errors.password && <p className="text-red-500 text-sm">{errors.password.message}</p>}
               </div>
             </div>
@@ -68,7 +111,7 @@ const Login = () => {
             </div>
           </div>
           <div className="grid grid-cols-1 gap-4">
-            <Button variant="outline" className="text-lg py-6">
+            <Button variant="outline" className="text-lg py-6" onClick={handleGoogleLogin}>
               <img src={googleLogo} alt="Google Logo" className="mr-2 h-5 w-5" />
               Google
             </Button>
