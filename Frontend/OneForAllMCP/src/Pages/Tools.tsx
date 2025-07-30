@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import ToolsNav from '@/components/ToolsNav';
-import { Check } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
 import { GlobeIcon, PersonIcon, RocketIcon } from '@radix-ui/react-icons';
 
 const toolsData = [
@@ -62,11 +62,9 @@ const Tools = () => {
               }`}
               onClick={() => toggleCardSelection(tool.id)}
             >
-              {selectedCards.includes(tool.id) && (
-                <div className="absolute top-2 right-2 bg-primary text-primary-foreground rounded-full p-1">
-                  <Check size={16} />
-                </div>
-              )}
+              <div className="absolute top-2 right-2">
+                <Checkbox checked={selectedCards.includes(tool.id)} />
+              </div>
               <Card className="w-full shadow-none border-none">
                 <CardHeader className="flex flex-row items-center gap-4">
                   {tool.icon}
