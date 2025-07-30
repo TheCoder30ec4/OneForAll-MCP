@@ -3,6 +3,7 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import ToolsNav from '@/components/ToolsNav';
 import { Check } from 'lucide-react';
+import { GlobeIcon, PersonIcon, RocketIcon } from '@radix-ui/react-icons';
 
 const toolsData = [
   {
@@ -10,18 +11,21 @@ const toolsData = [
     title: 'Maps SDK for Android',
     description: 'Google',
     content: 'Maps for your native Android app.',
+    icon: <PersonIcon className="w-8 h-8" />,
   },
   {
     id: '2',
     title: 'Maps SDK for iOS',
     description: 'Google',
     content: 'Maps for your native iOS app.',
+    icon: <PersonIcon className="w-8 h-8" />,
   },
   {
     id: '3',
     title: 'Maps JavaScript API',
     description: 'Google',
     content: 'Maps for your website',
+    icon: <GlobeIcon className="w-8 h-8" />,
   },
 ];
 
@@ -64,9 +68,12 @@ const Tools = () => {
                 </div>
               )}
               <Card className="w-full shadow-none border-none">
-                <CardHeader>
-                  <CardTitle>{tool.title}</CardTitle>
-                  <CardDescription>{tool.description}</CardDescription>
+                <CardHeader className="flex flex-row items-center gap-4">
+                  {tool.icon}
+                  <div>
+                    <CardTitle>{tool.title}</CardTitle>
+                    <CardDescription>{tool.description}</CardDescription>
+                  </div>
                 </CardHeader>
                 <CardContent>
                   <p>{tool.content}</p>
