@@ -7,6 +7,7 @@ import Pricing from './Pages/Pricing'
 import Contact from './Pages/Contact'
 import Login from './Pages/Login'
 import Signup from './Pages/Signup'
+import Tools from './Pages/Tools'
 import { Toaster } from "./components/ui/toaster"
 
 function App() {
@@ -20,6 +21,7 @@ function App() {
         <Route path="/contact" element={<Contact />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
+        <Route path="/tools" element={<Tools />} />
       </Routes>
       <Toaster />
     </>

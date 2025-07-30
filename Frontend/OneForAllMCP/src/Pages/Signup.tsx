@@ -55,7 +55,7 @@ const Signup = () => {
       console.log("Signup successful! User ID Token:", idToken);
       localStorage.setItem('idToken', idToken);
       toast.success("Signup successful!");
-      navigate('/');
+      navigate('/tools');
 
     } catch (err: any) {
       console.error(err);
@@ -74,7 +74,7 @@ const Signup = () => {
         console.log("Google User ID Token:", idToken);
       }
       toast.success("Google Login successful!");
-      navigate('/');
+      navigate('/tools');
     } catch (error: any) {
       console.error("Error during Google login:", error);
       toast.error(`Google Login Error: ${error.message}`);
@@ -92,7 +92,7 @@ const Signup = () => {
         console.log("GitHub User ID Token:", idToken);
       }
       toast.success("GitHub Login successful!");
-      navigate('/');
+      navigate('/tools');
     } catch (error: any) {
       console.error(error);
       toast.error(`GitHub Login Error: ${error.message}`);

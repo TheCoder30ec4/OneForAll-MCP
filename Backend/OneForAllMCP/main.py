@@ -13,7 +13,7 @@ app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://localhost:5173/"],
+    allow_origins=["http://localhost:5173", "http://localhost:5173/", "http://localhost:5175", "http://localhost:5174"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -21,8 +21,8 @@ app.add_middleware(
 
 security = HTTPBearer()
 
-# SESSION_COOKIE_NAME = "session"
-# SESSION_EXPIRE_DAYS = 5
+SESSION_COOKIE_NAME = "session"
+SESSION_EXPIRE_DAYS = 5
 
 @app.post("/sessionLogin")
 async def session_login(data: dict, response: Response):
@@ -37,14 +37,14 @@ async def session_login(data: dict, response: Response):
         session_cookie = auth.create_session_cookie(id_token, expires_in=expires_in)
 
         # Set cookie
-        # response.set_cookie(
-        #     key=SESSION_COOKIE_NAME,
-        #     value=session_cookie,
-        #     max_age=SESSION_EXPIRE_DAYS * 86400,
-        #     httponly=True,
-        #     secure=False,  # 🔐 Set to True in production (HTTPS)
-        #     samesite="Lax",
-        # )
+        response.set_cookie(
+            key=SESSION_COOKIE_NAME,
+            value=session_cookie,
+            max_age=SESSION_EXPIRE_DAYS * 86400,
+            httponly=True,
+            secure=False,  # 🔐 Set to True in production (HTTPS)
+            samesite="Lax",
+        )
         return {"message": f"Session started for {decoded.get('email')}"}
     except Exception as e:
         print(e)
