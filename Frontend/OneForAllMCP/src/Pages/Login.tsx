@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Label } from "../components/ui/label";
 import { Input } from "../components/ui/input";
 import { Button } from "../components/ui/button";
-import { signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, GithubAuthProvider } from "firebase/auth";
+import { signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, GithubAuthProvider, fetchSignInMethodsForEmail, linkWithCredential } from "firebase/auth";
 import { auth } from "../FireBase/Config";
 import { toast } from "sonner";
 import { useNavigate } from 'react-router-dom';
@@ -103,8 +103,18 @@ const Login = () => {
       toast.success("GitHub Login successful!");
       navigate('/tools');
     } catch (error: any) {
-      console.error(error);
-      toast.error(`GitHub Login Error: ${error.message}`);
+      if (error.code === 'auth/account-exists-with-different-credential') {
+        const email = error.customData.email;
+        const methods = await fetchSignInMethodsForEmail(auth, email);
+        if (methods.length > 0) {
+          toast.error(`An account already exists with this email using ${methods[0]}. Please sign in with ${methods[0]} to link your GitHub account.`);
+          // Here you could implement a flow to sign in with the existing provider
+          // and then link the new credential. For simplicity, we'll just notify the user.
+        }
+      } else {
+        console.error(error);
+        toast.error(`GitHub Login Error: ${error.message}`);
+      }
     }
   };
 
