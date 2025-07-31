@@ -1,13 +1,22 @@
-from fastapi import FastAPI, Request, Response, HTTPException, Depends
+from fastapi import FastAPI, Request, Response, HTTPException, Depends, Path
 from fastapi.middleware.cors import CORSMiddleware
 import firebase_admin 
 from firebase_admin import auth, credentials
 from datetime import timedelta
 import os 
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from langchain_mcp_adapters.client import MultiServerMCPClient
 
-cred = credentials.Certificate("FireBase_config.json")
-firebase_admin.initialize_app(cred)
+client = MultiServerMCPClient({
+    "math": {
+        "transport": "streamable_http",
+        "url": "http://127.0.0.1:8000/mcp/"
+    }
+})
+
+if not firebase_admin._apps:
+    cred = credentials.Certificate("FireBase_config.json")
+    firebase_admin.initialize_app(cred)
 
 app = FastAPI() 
 
@@ -71,3 +80,31 @@ async def logout(response: Response, request: Request):
             pass
     response.delete_cookie(SESSION_COOKIE_NAME)
     return {"message": "Logged out"}
+
+
+@app.get("/tools")
+async def get_tools():
+    tools = await client.get_tools()
+    print(tools)
+    # Serialize the tools into a JSON-friendly format
+    return [
+        {
+            "name": tool.name,
+            "description": tool.description,
+            "args": tool.args,
+        }
+        for tool in tools
+    ]
+
+
+
+
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(
+        "main:app",
+        host="127.0.0.1",
+        port=8001,
+        reload=True
+    )
