@@ -10,10 +10,11 @@ import { signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, Github
 import { auth } from "../FireBase/Config";
 import { toast } from "sonner";
 import { useNavigate } from 'react-router-dom';
+import { sessionLogin } from '../services/authService';
 
 // TODO: Fix or provide correct paths for logo imports if needed
-import googleLogo from "../../public/google.svg?url";
-import githubLogo from "../../public/github.svg?url";
+import googleLogo from "/google.svg?url";
+import githubLogo from "/github.svg?url";
 
 const formSchema = z.object({
   email: z.string().email({ message: "Invalid email address" }),
@@ -38,11 +39,7 @@ const Login = () => {
       const idToken = await userCredential.user.getIdToken();
 
       // Send token to backend for session creation
-      await fetch('http://localhost:8000/sessionLogin', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ idToken }),
-      });
+      await sessionLogin(idToken);
 
       console.log("Login successful! User ID Token:", idToken);
       localStorage.setItem('idToken', idToken);
@@ -65,11 +62,7 @@ const Login = () => {
         const idToken = await userCredential.user.getIdToken();
 
         // Send token to backend for session creation
-        await fetch('http://localhost:8000/sessionLogin', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ idToken }),
-        });
+        await sessionLogin(idToken);
 
         // console.log("Google User ID Token:", idToken);
         localStorage.setItem('idToken', idToken);
@@ -91,11 +84,7 @@ const Login = () => {
         const idToken = await userCredential.user.getIdToken();
 
         // Send token to backend for session creation
-        await fetch('http://localhost:8000/sessionLogin', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ idToken }),
-        });
+        await sessionLogin(idToken);
 
         console.log("GitHub User ID Token:", idToken);
         localStorage.setItem('idToken', idToken);

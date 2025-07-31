@@ -6,12 +6,13 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Label } from "../components/ui/label";
 import { Input } from "../components/ui/input";
 import { Button } from "../components/ui/button";
-import googleLogo from "../../public/google.svg?url";
-import githubLogo from "../../public/github.svg?url";
+import googleLogo from "/google.svg?url";
+import githubLogo from "/github.svg?url";
 import { createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, GithubAuthProvider } from "firebase/auth";
 import { auth } from "../FireBase/Config";
 import { toast } from "sonner";
 import { useNavigate } from 'react-router-dom';
+import { sessionLogin } from '../services/authService';
 
 const formSchema = z.object({
   email: z.string().email({ message: "Invalid email address" }),
@@ -42,15 +43,7 @@ const Signup = () => {
       const idToken = await userCredential.user.getIdToken();
 
       // Send token to backend for session creation
-      const res = await fetch('http://localhost:8000/sessionLogin', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        // credentials: 'include', // ⬅️ VERY IMPORTANT
-        body: JSON.stringify({ idToken }),
-      });
-
-      // const data = await res.json();
-      // alert(data.message);
+      await sessionLogin(idToken);
 
       console.log("Signup successful! User ID Token:", idToken);
       localStorage.setItem('idToken', idToken);
@@ -175,4 +168,4 @@ const Signup = () => {
   );
 };
 
-export default Signup; 
+export default Signup;
